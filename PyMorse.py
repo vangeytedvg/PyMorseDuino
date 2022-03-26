@@ -1,7 +1,11 @@
 # 
-# PyMorse.py
+# PyMorse
 # Version 1.0
+# Author : Danny Van Geyte
+# History : - 25/03/2022 SOD
+#           - 26/03/2022 Added COM port detection and basic event handlers
 #
+
 import sys
 import serial
 import serial.tools.list_ports
@@ -21,6 +25,7 @@ class MorseWindow(QMainWindow, Ui_MainWindow):
         self.getportlist()
         # variables
         self.morseSpeed = 0
+        self.active_comport = ""
         # Bind event handlers
         self.dialSpeed.valueChanged.connect(self.changespeed)
         self.btnRun.clicked.connect(self.runencoder)
@@ -29,10 +34,19 @@ class MorseWindow(QMainWindow, Ui_MainWindow):
         self.lcdSpeed.setEnabled(True)
         self.lcdSpeed.display(self.dialSpeed.value())
         self.dialSpeed.setValue(92)
+        self.active_comport = self.get_port()
+
+    def get_port(self):
+        x = self.cmbComPort.currentText()
+        pos1 = x.find("(")
+        pos2 = x.find(")")
+        comPort = x[pos1+1:pos2]
+        print(comPort)
 
     def comport_changed(self):
         # Change comport
-        pass
+        print(self.cmbComPort.currentText())
+        self.get_port()
 
     def getportlist(self):
         # fill combo with available COM ports
