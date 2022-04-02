@@ -15,8 +15,14 @@ from PyQt6.QtWidgets import (QMainWindow, QApplication,
 
 from frmMain import Ui_MainWindow
 
+from arduino import Arduino
+
 
 class MorseWindow(QMainWindow, Ui_MainWindow):
+
+    def __delete__(self, instance):
+        if ser:
+            self.ser.close()
 
     def __init__(self):
         super(MorseWindow, self).__init__()
@@ -34,35 +40,41 @@ class MorseWindow(QMainWindow, Ui_MainWindow):
         self.lcdSpeed.setEnabled(True)
         self.lcdSpeed.display(self.dialSpeed.value())
         self.dialSpeed.setValue(92)
-        self.active_comport = self.get_port()
+        self.ser = None
 
     def get_port(self):
+        # Get the real COM port from the string in the combobox
         x = self.cmbComPort.currentText()
         pos1 = x.find("(")
         pos2 = x.find(")")
-        comPort = x[pos1+1:pos2]
-        print(comPort)
+        if pos1 > 0 and pos2 > 0:
+            comPort = x[pos1 + 1:pos2]
+            return comPort
+        else:
+            print("Not a COM port!")
+            return None
 
     def comport_changed(self):
-        # Change comport
-        print(self.cmbComPort.currentText())
-        self.get_port()
+        # Check if there is a port open
+        self.ser = serial.Serial(self.get_port(), 9600)
 
     def getportlist(self):
         # fill combo with available COM ports
         ports = serial.tools.list_ports.comports()
+        self.cmbComPort.addItem("None")
         for port in ports:
             self.cmbComPort.addItem(port.description)
 
     def changespeed(self):
         # handle speed of morse encoding
         self.morseSpeed = self.dialSpeed.value()
-        print(self.morseSpeed)
         self.lcdSpeed.display(self.dialSpeed.value())
+
 
     def runencoder(self):
         # Send the morse code to the Arduino
-        pass
+        self.ser.write(b'#100')
+
 
 
 if __name__ == '__main__':
